@@ -1,4 +1,4 @@
-use syn::{parse::{Parse, ParseStream}, Result, LitStr, LitChar, Ident, token};
+use syn::{parse::{Parse, ParseStream}, Result, LitStr, Ident, token};
 
 pub(crate) struct StaticFileMacroInput {
     pub app_ident: Ident,

@@ -23,14 +23,16 @@ pub fn create_paths(path_prefix: &str, files: &Vec<PathBuf>) -> Vec<String> {
             let mut ancs = Vec::new();
             for anc in parent.ancestors() {
                 if let Some(name) = anc.file_name().and_then(|n| n.to_str()) {
-                    ancs.push(name);
+                    ancs.insert(0, name);
                 }
             }
+            ancs.remove(0);
             join = format!("{}/{}", path_prefix.trim_end_matches('/'), ancs.join("/"));
         } else {
             join = path_prefix.to_string();
         }
-        paths.push(format!("{}/{}", join, file.file_name().unwrap().to_str().unwrap()));
+        println!("{}", join);
+        paths.push(format!("{}/{}", join.trim_end_matches('/'), file.file_name().unwrap().to_str().unwrap()));
     }
     paths
 }
