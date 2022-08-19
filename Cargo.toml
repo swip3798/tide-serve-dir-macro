@@ -1,7 +1,15 @@
 [package]
-name = "tide-serve-dir-static"
+name = "tide-serve-dir-macro"
 version = "0.1.0"
 edition = "2021"
+authors = ["Christian Schweigel"]
+description = "Macros to serve a directory of static files in tide"
+repository = "https://github.com/swip3798/fltk-builder"
+documentation = "https://docs.rs/tide-serve-dir-macro"
+keywords = ["macro", "web", "tide"]
+categories = ["gui"]
+readme = "README.md"
+license = "MIT OR Apache-2.0"
 
 [lib]
 proc-macro = true
