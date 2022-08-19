@@ -1,70 +1,40 @@
-use input::StaticFileMacroInput;
+#![doc = include_str!("../README.md")]
+use input::{StaticFileMacroInput, IncludeFileMacroInput};
+use macro_function::macro_fn;
 use proc_macro::TokenStream;
-use quote::quote;
 use syn::parse_macro_input;
 
 mod dir;
 mod input;
 mod mime;
+mod macro_function;
 
+/// Serves all files in the given directory using the `serve_file` function.
+/// Files that are not available during compile time won't be served, files that were available at compile time but not during runtime will cause a panic
 #[proc_macro]
 pub fn serve_dir(input: TokenStream) -> TokenStream {
     let minput = parse_macro_input!(input as StaticFileMacroInput);
-    let static_dir = minput.directory.value();
-    let file_list = dir::generate_file_list(static_dir.into())
-        .unwrap_or_else(|e| panic!("The given directory could not be accessed: {:?}", e));
-    let path_list = dir::create_paths(minput.path.value().as_str(), &file_list);
-    let mut filestrs = Vec::new();
-    for file in file_list {
-        filestrs.push(file.to_str().unwrap().to_string());
-    }
-    let ident = minput.app_ident;
-    let output = quote! {
-        #(
-            #ident.at(#path_list).serve_file(#filestrs).unwrap();
-        )*
-    };
-    output.into()
+    let minput = IncludeFileMacroInput{ app_ident: minput.app_ident, path: minput.path, directory: minput.directory, max_file_size: None };
+    macro_fn(minput, true)
 }
 
+/// Serves all files in the given directory by directly integrating them in the application binary using the `include_str!` macro of the standard library.
+/// Greatly increases performance but also obviously increases binary file size and memory usage. Addtionally files can't be changed at compile time.
+/// Takes an optional 4th parameter to set the maximum file size in bytes before the file is going to be served dynamically instead of being included in the binary.
 #[proc_macro]
 pub fn include_dir(input: TokenStream) -> TokenStream {
-    let minput = parse_macro_input!(input as StaticFileMacroInput);
-    let static_dir = minput.directory.value();
-    let file_list = dir::generate_file_list(static_dir.into())
-        .unwrap_or_else(|e| panic!("The given directory could not be accessed: {:?}", e));
-    let path_list = dir::create_paths(minput.path.value().as_str(), &file_list);
-    let mut filestrs = Vec::new();
-    let mimes = mime::detect_mimes(&file_list);
-    for file in file_list {
-        filestrs.push(file.to_str().unwrap().to_string());
-    }
-    let ident = minput.app_ident;
-    let output = quote! {
-        #(
-            #ident.at(#path_list).get(|_| async { Ok(tide::Response::builder(200).content_type(#mimes).body(include_str!(concat!("../", #filestrs)))) });
-        )*
-    };
-    output.into()
+    let minput = parse_macro_input!(input as IncludeFileMacroInput);
+    macro_fn(minput, false)
 }
 
+/// Selects how it should serve the directory using the build profile.
+/// In debug it uses `serve_dir!`, in release it uses `include_dir!`.
+/// Takes an optional 4th parameter to set the maximum file size in bytes before the file is going to be served dynamically instead of being included in the binary.
 #[proc_macro]
-pub fn auto_dir(input: TokenStream) -> TokenStream {
+pub fn auto_serve_dir(input: TokenStream) -> TokenStream {
+    let minput = parse_macro_input!(input as IncludeFileMacroInput);
     #[cfg(debug_assertions)]
-    return serve_dir(input);
+    return macro_fn(minput, true);
     #[cfg(not(debug_assertions))]
-    return include_dir(input);
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::dir::{create_paths, generate_file_list};
-
-    #[test]
-    fn test_dir_traversal() {
-        let list = generate_file_list("static".into()).unwrap();
-        println!("{:?}", list);
-        let paths = create_paths("/", &list);
-        println!("{:?}", paths);
-    }
+    return macro_fn(minput, false);
 }
