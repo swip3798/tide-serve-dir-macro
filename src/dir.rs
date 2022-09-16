@@ -31,7 +31,6 @@ pub fn create_paths(path_prefix: &str, files: &Vec<PathBuf>) -> Vec<String> {
         } else {
             join = path_prefix.to_string();
         }
-        println!("{}", join);
         paths.push(format!("{}/{}", join.trim_end_matches('/'), file.file_name().unwrap().to_str().unwrap()));
     }
     paths
