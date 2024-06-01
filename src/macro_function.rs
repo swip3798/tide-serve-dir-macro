@@ -18,7 +18,7 @@ pub(crate) fn macro_fn(input: IncludeFileMacroInput, always_serve: bool) -> Toke
             let mime = detect_mime(file);
             output = quote! {
                 #output
-                #ident.at(#path).get(|_| async { Ok(tide::Response::builder(200).content_type(#mime).body(include_str!(concat!("../", #filestr)))) });
+                #ident.at(#path).get(|_| async { Ok(tide::Response::builder(200).content_type(#mime).body(&include_bytes!(concat!("../", #filestr))[..])) });
             };
         } else {
             output = quote! {
