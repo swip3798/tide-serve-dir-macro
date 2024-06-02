@@ -14,7 +14,7 @@ pub(crate) fn macro_fn(input: IncludeFileMacroInput, always_serve: bool) -> Toke
     for (file, path) in file_list.iter().zip(path_list.iter()) {
         let filestr = file.to_str().unwrap().to_string();
         let file_size = file.metadata().map(|m| m.len()).unwrap_or(0);
-        if !always_serve && max_file_size != 0 && file_size < max_file_size {
+        if !always_serve && (max_file_size == 0 || file_size < max_file_size) {
             let mime = detect_mime(file);
             output = quote! {
                 #output
