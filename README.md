@@ -1,6 +1,6 @@
 # Tide Serve Directory Macros
 
-This crate offers a few macros to serve a directory of static files in tide without using the `serve_dir` function itself. Instead it loops through the static directory at compile-time and generates direct `serve_file` routes for all the files it found, or directly embeds the files in the application binary using `include_str`.
+This crate offers a few macros to serve a directory of static files in tide without using the `serve_dir` function itself. Instead it loops through the static directory at compile-time and generates direct `serve_file` routes for all the files it found, or directly embeds the files in the application binary using `include_bytes`.
 
 This approach aims to be more safe than just serving an entire directory, since every single file that is going to be served is known at compile time. When embedding the files in the application binary, it can also drastically improve performance.
 
