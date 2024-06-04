@@ -9,7 +9,7 @@ This approach aims to be more safe than just serving an entire directory, since 
 First add tide-serve-dir-macro to your dependencies:
 ```toml
 [dependencies]
-tide-serve-dir-macro = "0.1"
+tide-serve-dir-macro = "0.2"
 ```
 
 There are three macros available for serving a directory:
